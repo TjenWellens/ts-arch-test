@@ -9,7 +9,7 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"prepack": "npm build",
+		"prepack": "npm run build",
 		"bump": "npm version patch",
 		"test": "mocha --require ts-node/register src/**/*.spec.ts"
 	},
