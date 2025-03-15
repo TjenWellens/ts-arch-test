@@ -1,0 +1,31 @@
+{
+	"name": "ts-arch-test",
+	"version": "0.0.1",
+	"description": "test architecture dependencies in typescript",
+	"main": "dist/index.ts",
+	"types": "dist/index.d.ts",
+	"files": [
+		"/dist"
+	],
+	"scripts": {
+		"compile": "tsc",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/TjenWellens/ts-arch-test.git"
+	},
+	"author": "TjenWellens",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/TjenWellens/ts-arch-test/issues"
+	},
+	"homepage": "https://github.com/TjenWellens/ts-arch-test#readme",
+	"devDependencies": {
+		"typescript": "^5.8.2"
+	},
+	"dependencies": {
+		"@types/node": "^22.13.10",
+		"node": "^20.19.0"
+	}
+}
