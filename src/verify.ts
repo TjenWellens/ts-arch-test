@@ -3,7 +3,7 @@ import * as ts from 'typescript';
 import {Violation} from "./Violation";
 import {ArchitectureSpec} from "./ArchitectureSpec";
 import {Dependency} from "./Dependency";
-import {relativeResolve, tsconfigReplacementPaths} from "./tsconfigReplacementPaths";
+import {PathReplacement, relativeResolve, tsconfigReplacementPaths} from "./tsconfigReplacementPaths";
 import * as path from "node:path";
 
 type FilePathInfo = {
@@ -174,6 +174,33 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
   }
 }
 
+function createUnRelative(f: FileDependencies) {
+  return function unRelative(dependency: Dependency): Dependency {
+    if (dependency.referencedSpecifier.startsWith('.')) {
+      return {
+        ...dependency,
+        referencedSpecifier: relativeResolve(dependency.referencedSpecifier, f.file)
+      }
+    } else {
+      return dependency;
+    }
+  }
+}
+
+function createUnCompilerOptionsPaths(replacements: PathReplacement[]) {
+  return function unCompilerOptionsPaths(dependency: Dependency): Dependency {
+    const replacement = replacements.find(r => dependency.referencedSpecifier.startsWith(r.from))
+    if (replacement) {
+      return {
+        ...dependency,
+        referencedSpecifier: dependency.referencedSpecifier.replace(replacement.from, replacement.to)
+      };
+    } else {
+      return dependency;
+    }
+  }
+}
+
 export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: string = 'tsconfig.json'): Promise<Violation[]> {
   try {
     await access(path.resolve(path.dirname(tsconfig), spec.notDependOnFolder))
@@ -188,31 +215,12 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
 
   const replacements = await tsconfigReplacementPaths(tsconfig)
 
-  const dependenciesFromFolder = parsedFileDependencies
+  const dependenciesFromFolder: FileDependencies[] = parsedFileDependencies
     .filter(d => d !== null)
     .map(f => ({
       ...f, dependencies: f.dependencies
-        .map(function unCompilerOptionsPaths(dependency: Dependency) {
-          const replacement = replacements.find(r => dependency.referencedSpecifier.startsWith(r.from))
-          if (replacement) {
-            return {
-              ...dependency,
-              referencedSpecifier: dependency.referencedSpecifier.replace(replacement.from, replacement.to)
-            };
-          } else {
-            return dependency;
-          }
-        })
-        .map(function unRelative(dependency: Dependency) {
-          if (dependency.referencedSpecifier.startsWith('.')) {
-            return {
-              ...dependency,
-              referencedSpecifier: relativeResolve(dependency.referencedSpecifier, f.file)
-            }
-          } else {
-            return dependency;
-          }
-        })
+        .map(createUnCompilerOptionsPaths(replacements))
+        .map(createUnRelative(f))
     }));
 
   const violations: Violation[] = dependenciesFromFolder

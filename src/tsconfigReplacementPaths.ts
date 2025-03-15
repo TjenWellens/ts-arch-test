@@ -9,7 +9,7 @@ type Tsconfig = {
   extends?: string
 }
 
-type PathReplacement = {
+export type PathReplacement = {
   from: string, to: string
 }
 
