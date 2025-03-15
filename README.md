@@ -1,7 +1,7 @@
 # ts-arch-test
 test architecture dependencies
 
-very unstable, work in progress
+kinda in a stable state now, I'm using it myself and it's been useful!
 
 ## install
 ```shell
