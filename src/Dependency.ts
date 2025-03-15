@@ -1,7 +1,7 @@
 export type Dependency = {
   typeOnly: boolean
   relativePathReference: boolean
-  referencedSpecifier: string
-  originalReferencedSpecifier: string
+  importedModule: string
+  originalImportedModule: string
   type: 'import' | 'call' | 'export'
 }

@@ -88,16 +88,16 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
         return [{
           typeOnly: exportDeclaration.isTypeOnly,
           relativePathReference: true,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'export',
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
           typeOnly: exportDeclaration.isTypeOnly,
           relativePathReference: false,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'export',
         }];
       } else {
@@ -119,16 +119,16 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
         return [{
           typeOnly: (!!importClause && !importClause.isTypeOnly),
           relativePathReference: true,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'import',
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
           typeOnly: (!!importClause && !importClause.isTypeOnly),
           relativePathReference: false,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'import',
         }];
       } else {
@@ -152,16 +152,16 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
         return [{
           typeOnly: false,
           relativePathReference: true,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'call',
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
           typeOnly: false,
           relativePathReference: false,
-          referencedSpecifier: specifier,
-          originalReferencedSpecifier: specifier,
+          importedModule: specifier,
+          originalImportedModule: specifier,
           type: 'call',
         }];
       } else {
@@ -176,10 +176,10 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
 
 function createUnRelative(f: FileDependencies) {
   return function unRelative(dependency: Dependency): Dependency {
-    if (dependency.referencedSpecifier.startsWith('.')) {
+    if (dependency.importedModule.startsWith('.')) {
       return {
         ...dependency,
-        referencedSpecifier: relativeResolve(dependency.referencedSpecifier, f.file)
+        importedModule: relativeResolve(dependency.importedModule, f.file)
       }
     } else {
       return dependency;
@@ -189,11 +189,11 @@ function createUnRelative(f: FileDependencies) {
 
 function createUnCompilerOptionsPaths(replacements: PathReplacement[]) {
   return function unCompilerOptionsPaths(dependency: Dependency): Dependency {
-    const replacement = replacements.find(r => dependency.referencedSpecifier.startsWith(r.from))
+    const replacement = replacements.find(r => dependency.importedModule.startsWith(r.from))
     if (replacement) {
       return {
         ...dependency,
-        referencedSpecifier: dependency.referencedSpecifier.replace(replacement.from, replacement.to)
+        importedModule: dependency.importedModule.replace(replacement.from, replacement.to)
       };
     } else {
       return dependency;
@@ -225,13 +225,12 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
 
   const violations: Violation[] = dependenciesFromFolder
     .map(f => {
-      const notAllowed = f.dependencies.filter(({referencedSpecifier}) => referencedSpecifier.startsWith(spec.notDependOnFolder));
+      const notAllowed = f.dependencies.filter(({importedModule}) => importedModule.startsWith(spec.notDependOnFolder));
       if (notAllowed.length) {
         return {
           file: f.file,
           message: `should not depend on folder ${spec.notDependOnFolder}`,
           notAllowedDependencies: notAllowed,
-          // todo: rename: referencedSpecifier to imported module
           // todo: fix typeOnly seems inverse
         };
       }
