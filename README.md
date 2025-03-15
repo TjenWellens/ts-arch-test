@@ -42,5 +42,5 @@ describe('Architecture test', () => {
 # Collaborating
 ### how to publish new version
 ```shell
-npm publish
+npm version patch && npm publish
 ```
