@@ -15,7 +15,7 @@ npm install --save-dev ts-arch-test@latest
 ## examples
 ### simple case
 ```typescript
-import {verifyArchitecture} from './verify';
+import {verifyArchitecture} from 'ts-arch-test';
 import {expect} from 'chai';
 
 describe('Architecture test', () => {
@@ -24,6 +24,24 @@ describe('Architecture test', () => {
       filesFromFolder: 'testdata/tsconfig-inheritance/src/lib/db',
       notDependOnFolder: 'testdata/tsconfig-inheritance/src/lib/services'
     }, 'tsconfig.json')).to.deep.equal([]);
+  })
+});
+```
+
+### clickable error message
+```typescript
+import { verifyArchitecture, clickableErrorMessage } from 'ts-arch-test';
+import {expect} from 'chai';
+
+describe('Architecture test', () => {
+  it('single case', async () => {
+    const spec = {
+      filesFromFolder: 'testdata/tsconfig-inheritance/src/lib/db',
+      notDependOnFolder: 'testdata/tsconfig-inheritance/src/lib/services'
+    };
+    const violations = await verifyArchitecture(spec, 'tsconfig.json');
+    const msg = clickableErrorMessage(spec, violations);
+    expect(violations, msg).toEqual([]);
   })
 });
 ```
