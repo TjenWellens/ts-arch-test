@@ -1,6 +1,6 @@
 {
 	"name": "ts-arch-test",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"description": "test architecture dependencies in typescript",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
