@@ -4,6 +4,7 @@ import {readdir, readFile} from 'node:fs/promises';
 import * as ts from 'typescript';
 import {Violation} from "./Violation";
 import {ArchitectureSpec} from "./ArchitectureSpec";
+import {Dependency} from "./Dependency";
 
 async function getFiles(folder: string) {
   if (folder.endsWith('/')) throw new Error('folder cannot end in /');
@@ -49,13 +50,6 @@ function unLib(dependency: Dependency) {
 
 const specifierRelativeFile = /^\..*$/;
 const specifierNodeModule = /^[^.]/;
-
-type Dependency = {
-  typeOnly: boolean
-  relativePathReference: boolean
-  referencingPath: string
-  referencedSpecifier: string
-}
 
 /**
  * based on https://stackoverflow.com/a/69210603/820837
@@ -142,14 +136,13 @@ export async function verifyArchitecture(spec: ArchitectureSpec): Promise<Violat
     .map(f => ({
       ...f, dependencies: f.dependencies
         .map(unLib)
-        // unRelative
-        .map(d => d.referencedSpecifier)
+      // unRelative
     }))
   ;
 
   const violations: Violation[] = dependenciesFromFolder
     .map(f => {
-      const notAllowed = f.dependencies.filter(d => d.startsWith(spec.notDependOnFolder));
+      const notAllowed = f.dependencies.filter(({referencedSpecifier}) => referencedSpecifier.startsWith(spec.notDependOnFolder));
       if (notAllowed.length) {
         return {
           file: f.file,
