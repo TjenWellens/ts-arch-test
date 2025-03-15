@@ -1,5 +1,6 @@
 import {readFile} from "node:fs/promises";
 import * as path from 'node:path';
+import * as JSON5 from 'json5'
 
 type Tsconfig = {
   compilerOptions?: {
@@ -28,7 +29,7 @@ export function relativeResolveTsconfigPaths(base: string, _extends: string, to:
 
 export async function _tsconfigPathReplacements(tsconfigFilename: string) {
   const tsconfigContent = await readFile(tsconfigFilename, 'utf8');
-  const tsconfig = JSON.parse(tsconfigContent) as Tsconfig;
+  const tsconfig = JSON5.parse(tsconfigContent) as Tsconfig;
   const pathReplacements: PathReplacement[] = []
 
   if (tsconfig.extends) {

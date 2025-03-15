@@ -1,3 +1,4 @@
 {
-	"extends": "./parent/tsconfig.json"
+	"extends": "./parent/tsconfig.json",
+	// with comments
 }
