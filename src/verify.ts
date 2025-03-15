@@ -9,7 +9,7 @@ async function getFiles(folder: string) {
   if (folder.endsWith('/')) throw new Error('folder cannot end in /');
   if (folder === '') throw new Error('folder cannot be empty');
 
-  const files = await readdir(folder, { recursive: true });
+  const files = await readdir(folder, {recursive: true});
   return files.map(file => `${folder}/${file}`);
 }
 
@@ -34,7 +34,7 @@ async function getDependenciesFromFile(file: string): Promise<FileDependencies |
     };
   } catch (e: unknown) {
     // @ts-ignore
-    if(e.code === 'EISDIR') return null
+    if (e.code === 'EISDIR') return null
     throw new Error(`failed to get dependencies from file '${file}': ${e}`);
   }
 }
@@ -134,11 +134,11 @@ function getDependenciesFromNode(path: string, node: ts.Node): Dependency[] {
 export async function verifyArchitecture(spec: ArchitectureSpec): Promise<Violation[]> {
   const codeFileExtensions = ['.ts', '.js']
   const filesFromFolder = (await getFiles(spec.filesFromFolder))
-    .filter(file => codeFileExtensions.filter(ext => file.endsWith(ext)).length );
+    .filter(file => codeFileExtensions.filter(ext => file.endsWith(ext)).length);
   const parsedFileDependencies = await Promise.all(filesFromFolder.map(getDependenciesFromFile));
 
   const dependenciesFromFolder = parsedFileDependencies
-    .filter(d => d!==null)
+    .filter(d => d !== null)
     .map(f => ({
       ...f, dependencies: f.dependencies
         .map(unLib)
@@ -153,7 +153,8 @@ export async function verifyArchitecture(spec: ArchitectureSpec): Promise<Violat
       if (notAllowed.length) {
         return {
           file: f.file,
-          message: `should not depend on folder ${spec.notDependOnFolder}`
+          message: `should not depend on folder ${spec.notDependOnFolder}`,
+          notAllowedDependencies: notAllowed,
         };
       }
       return null;
