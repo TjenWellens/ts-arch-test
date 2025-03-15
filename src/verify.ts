@@ -57,8 +57,40 @@ const specifierNodeModule = /^[^.]/;
 function getDependenciesFromNode(path: string, node: ts.Node): Dependency[] {
   switch (node.kind) {
     case ts.SyntaxKind.ExportDeclaration: {
-      console.log('skipping ExportDeclaration');
-      return [];
+      const exportDeclaration = node as ts.ExportDeclaration;
+
+      if (!exportDeclaration.moduleSpecifier) {
+        console.log('ExportDeclaration no moduleSpecifier');
+        return [];
+      }
+      const specifier = (exportDeclaration.moduleSpecifier as ts.StringLiteral).text;
+
+      if (!specifier) {
+        console.log('ExportDeclaration no specifier text', specifier);
+        return [];
+      }
+      if (specifierRelativeFile.test(specifier)) {
+        return [{
+          typeOnly: exportDeclaration.isTypeOnly,
+          relativePathReference: true,
+          referencingPath: path,
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'export',
+        }];
+      } else if (specifierNodeModule.test(specifier)) {
+        return [{
+          typeOnly: exportDeclaration.isTypeOnly,
+          relativePathReference: false,
+          referencingPath: path,
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'export',
+        }];
+      } else {
+        console.log('ExportDeclaration specifier neither relative nor module', specifier);
+        return [];
+      }
     }
     case ts.SyntaxKind.ImportDeclaration: {
       const importDeclaration = node as ts.ImportDeclaration;
@@ -66,7 +98,7 @@ function getDependenciesFromNode(path: string, node: ts.Node): Dependency[] {
       const specifier = (importDeclaration.moduleSpecifier as ts.StringLiteral).text;
 
       if (!specifier) {
-        console.log('no specifier');
+        console.log('ImportDeclaration no specifier');
         return [];
       }
 
@@ -75,17 +107,21 @@ function getDependenciesFromNode(path: string, node: ts.Node): Dependency[] {
           typeOnly: (!!importClause && !importClause.isTypeOnly),
           relativePathReference: true,
           referencingPath: path,
-          referencedSpecifier: specifier
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'import',
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
           typeOnly: (!!importClause && !importClause.isTypeOnly),
           relativePathReference: false,
           referencingPath: path,
-          referencedSpecifier: specifier
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'import',
         }];
       } else {
-        console.log('specifier neither relative nor module', specifier);
+        console.log('ImportDeclaration specifier neither relative nor module', specifier);
         return [];
       }
     }
@@ -106,14 +142,18 @@ function getDependenciesFromNode(path: string, node: ts.Node): Dependency[] {
           typeOnly: false,
           relativePathReference: true,
           referencingPath: path,
-          referencedSpecifier: specifier
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'call',
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
           typeOnly: false,
           relativePathReference: false,
           referencingPath: path,
-          referencedSpecifier: specifier
+          referencedSpecifier: specifier,
+          originalReferencedSpecifier: specifier,
+          type: 'call',
         }];
       } else {
         return node.getChildren().flatMap(c => getDependenciesFromNode(path, c));
