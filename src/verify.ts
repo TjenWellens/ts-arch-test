@@ -188,13 +188,16 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
     .map(f => ({
       ...f, dependencies: f.dependencies
         .map(function (dependency: Dependency) {
-          // todo: relative depending on tsconfig.json
-          return {
-            ...dependency,
-            referencedSpecifier: dependency.referencedSpecifier.replace(/^\$lib\//, 'src/lib/')
-          };
+          const replacement = replacements.find(r => dependency.referencedSpecifier.startsWith(r.from))
+          if(replacement) {
+            return {
+              ...dependency,
+              referencedSpecifier: dependency.referencedSpecifier.replace(replacement.from, replacement.to)
+            };
+          } else {
+            return dependency;
+          }
         })
-      // todo: store 'original' before unlib and unrelative
       // todo: unRelative (aka handle relative paths)
     }))
   ;
