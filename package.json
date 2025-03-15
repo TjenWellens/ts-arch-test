@@ -9,7 +9,7 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"publish": "npm version patch && tsc && npm publish",
+		"publish": "npm version patch && tsc",
 		"test": "mocha --require ts-node/register src/**/*.spec.ts"
 	},
 	"repository": {
