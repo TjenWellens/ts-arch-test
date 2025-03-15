@@ -8,6 +8,7 @@ describe('verify', function () {
     db: 'src/lib/db',
     repositories: 'src/lib/repositories',
     services: 'src/lib/services',
+    relativeImport: 'src/lib/relativeImport',
   };
 
   it('should not return violations when ok', async function () {
@@ -35,6 +36,15 @@ describe('verify', function () {
     let violations = await verifyArchitecture({
       filesFromFolder: folders['repositories'],
       notDependOnFolder: folders['db']
+    }, tsconfig);
+
+    assert.equal(violations.length, 1);
+  })
+
+  it('should return violations when NOT ok - relative import', async function () {
+    let violations = await verifyArchitecture({
+      filesFromFolder: folders['repositories'],
+      notDependOnFolder: folders['relativeImport']
     }, tsconfig);
 
     assert.equal(violations.length, 1);

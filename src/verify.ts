@@ -3,7 +3,7 @@ import * as ts from 'typescript';
 import {Violation} from "./Violation";
 import {ArchitectureSpec} from "./ArchitectureSpec";
 import {Dependency} from "./Dependency";
-import {tsconfigReplacementPaths} from "./tsconfigReplacementPaths";
+import {relativeResolve, tsconfigReplacementPaths} from "./tsconfigReplacementPaths";
 import * as path from "node:path";
 
 type FilePathInfo = {
@@ -75,13 +75,13 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
       const exportDeclaration = node as ts.ExportDeclaration;
 
       if (!exportDeclaration.moduleSpecifier) {
-        console.log('ExportDeclaration no moduleSpecifier');
+        console.warn('ExportDeclaration no moduleSpecifier');
         return [];
       }
       const specifier = (exportDeclaration.moduleSpecifier as ts.StringLiteral).text;
 
       if (!specifier) {
-        console.log('ExportDeclaration no specifier text', specifier);
+        console.warn('ExportDeclaration no specifier text', specifier);
         return [];
       }
       if (specifierRelativeFile.test(specifier)) {
@@ -101,7 +101,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
           type: 'export',
         }];
       } else {
-        console.log('ExportDeclaration specifier neither relative nor module', specifier);
+        console.warn('ExportDeclaration specifier neither relative nor module', specifier);
         return [];
       }
     }
@@ -111,7 +111,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
       const specifier = (importDeclaration.moduleSpecifier as ts.StringLiteral).text;
 
       if (!specifier) {
-        console.log('ImportDeclaration no specifier');
+        console.warn('ImportDeclaration no specifier');
         return [];
       }
 
@@ -132,7 +132,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
           type: 'import',
         }];
       } else {
-        console.log('ImportDeclaration specifier neither relative nor module', specifier);
+        console.warn('ImportDeclaration specifier neither relative nor module', specifier);
         return [];
       }
     }
@@ -177,7 +177,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
 export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: string = 'tsconfig.json'): Promise<Violation[]> {
   try {
     await access(path.resolve(path.dirname(tsconfig), spec.notDependOnFolder))
-  }catch (e) {
+  } catch (e) {
     throw new Error(`ArchitectureSpec.notDependOnFolder must exist: ${spec.notDependOnFolder}`);
   }
 
@@ -188,14 +188,13 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
 
   const replacements = await tsconfigReplacementPaths(tsconfig)
 
-
   const dependenciesFromFolder = parsedFileDependencies
     .filter(d => d !== null)
     .map(f => ({
       ...f, dependencies: f.dependencies
-        .map(function (dependency: Dependency) {
+        .map(function unCompilerOptionsPaths(dependency: Dependency) {
           const replacement = replacements.find(r => dependency.referencedSpecifier.startsWith(r.from))
-          if(replacement) {
+          if (replacement) {
             return {
               ...dependency,
               referencedSpecifier: dependency.referencedSpecifier.replace(replacement.from, replacement.to)
@@ -204,9 +203,17 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
             return dependency;
           }
         })
-      // todo: unRelative (aka handle relative paths)
-    }))
-  ;
+        .map(function unRelative(dependency: Dependency) {
+          if (dependency.referencedSpecifier.startsWith('.')) {
+            return {
+              ...dependency,
+              referencedSpecifier: relativeResolve(dependency.referencedSpecifier, f.file)
+            }
+          } else {
+            return dependency;
+          }
+        })
+    }));
 
   const violations: Violation[] = dependenciesFromFolder
     .map(f => {
@@ -218,7 +225,6 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
           notAllowedDependencies: notAllowed,
           // todo: rename: referencedSpecifier to imported module
           // todo: fix typeOnly seems inverse
-          // todo: handle relative paths
         };
       }
       return null;
