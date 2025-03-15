@@ -9,7 +9,8 @@
 	],
 	"scripts": {
 		"build": "tsc",
-		"prepublish": "npm version patch && tsc",
+		"prepack": "npm build",
+		"bump": "npm version patch",
 		"test": "mocha --require ts-node/register src/**/*.spec.ts"
 	},
 	"repository": {
