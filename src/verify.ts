@@ -175,6 +175,12 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
 }
 
 export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: string = 'tsconfig.json'): Promise<Violation[]> {
+  try {
+    await access(path.resolve(path.dirname(tsconfig), spec.notDependOnFolder))
+  }catch (e) {
+    throw new Error(`ArchitectureSpec.notDependOnFolder must exist: ${spec.notDependOnFolder}`);
+  }
+
   const codeFileExtensions = ['.ts', '.js'] // todo get from tsconfig?
   const filesFromFolder = (await getFiles(spec.filesFromFolder, tsconfig))
     .filter(file => codeFileExtensions.filter(ext => file.extension.endsWith(ext)).length);

@@ -19,6 +19,18 @@ describe('verify', function () {
     assert.deepEqual(violations, []);
   })
 
+  it('should crash when notDependOnFolder does not exist', async function () {
+    try {
+      await verifyArchitecture({
+        filesFromFolder: folders['repositories'],
+        notDependOnFolder: 'doesNotExist'
+      }, tsconfig);
+    } catch (e) {
+      return
+    }
+    assert.fail('should throw error');
+  })
+
   it('should return violations when NOT ok', async function () {
     let violations = await verifyArchitecture({
       filesFromFolder: folders['repositories'],
