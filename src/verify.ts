@@ -5,6 +5,7 @@ import {ArchitectureSpec} from "./ArchitectureSpec";
 import {Dependency} from "./Dependency";
 import {PathReplacement, relativeResolve, tsconfigReplacementPaths} from "./tsconfigReplacementPaths";
 import * as path from "node:path";
+import {EOL} from "node:os";
 
 type FilePathInfo = {
   extension: string
@@ -199,6 +200,15 @@ function createUnCompilerOptionsPaths(replacements: PathReplacement[]) {
       return dependency;
     }
   }
+}
+
+export function clickableErrorMessage(spec: ArchitectureSpec, violations: Violation[]) {
+  const lineNumber = 0; //todo: get first actual line number
+  const clickableFilenames = violations
+    .map(v => v.file)
+    .map(filename => `${filename}:${lineNumber}`)
+
+  return `these files should NOT depend on ${spec.notDependOnFolder}${EOL}${clickableFilenames.join(EOL)}${EOL}`
 }
 
 export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: string = 'tsconfig.json'): Promise<Violation[]> {
