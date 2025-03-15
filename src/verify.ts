@@ -136,7 +136,8 @@ export async function verifyArchitecture(spec: ArchitectureSpec): Promise<Violat
     .map(f => ({
       ...f, dependencies: f.dependencies
         .map(unLib)
-      // unRelative
+      // todo: store 'original' before unlib and unrelative
+      // todo: unRelative (aka handle relative paths)
     }))
   ;
 
@@ -148,6 +149,10 @@ export async function verifyArchitecture(spec: ArchitectureSpec): Promise<Violat
           file: f.file,
           message: `should not depend on folder ${spec.notDependOnFolder}`,
           notAllowedDependencies: notAllowed,
+          // todo: remove referencingPath
+          // todo: rename: referencedSpecifier to imported module
+          // todo: fix typeOnly seems inverse
+          // todo: handle relative paths
         };
       }
       return null;
