@@ -2,6 +2,13 @@ import {verifyArchitecture} from './verify';
 import {expect} from 'chai';
 
 describe('Architecture test', () => {
+  it('single case', async () => {
+    expect(await verifyArchitecture({
+      filesFromFolder: 'testdata/tsconfig-inheritance/src/lib/db',
+      notDependOnFolder: 'testdata/tsconfig-inheritance/src/lib/services'
+    }, 'tsconfig.json')).to.deep.equal([]);
+  })
+
   const folders: Record<string, string> = {
     db: 'testdata/tsconfig-inheritance/src/lib/db',
     repositories: 'testdata/tsconfig-inheritance/src/lib/repositories',
@@ -17,7 +24,7 @@ describe('Architecture test', () => {
   cases.forEach(({filesFromFolderKey, notDependOnFolderKeys}) => {
     describe(filesFromFolderKey, () => {
       notDependOnFolderKeys.forEach(notDependOnFolderKey => {
-        it(`services should not depend on ${notDependOnFolderKey}`, async () => {
+        it(`${filesFromFolderKey} should not depend on ${notDependOnFolderKey}`, async () => {
           expect(await verifyArchitecture({
             filesFromFolder: folders[filesFromFolderKey],
             notDependOnFolder: folders[notDependOnFolderKey]
