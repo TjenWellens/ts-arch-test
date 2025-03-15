@@ -178,9 +178,6 @@ export async function verifyArchitecture(spec: ArchitectureSpec, tsconfig: strin
   const codeFileExtensions = ['.ts', '.js'] // todo get from tsconfig?
   const filesFromFolder = (await getFiles(spec.filesFromFolder, tsconfig))
     .filter(file => codeFileExtensions.filter(ext => file.extension.endsWith(ext)).length);
-  console.log(spec.filesFromFolder)
-  console.log(tsconfig)
-  console.log(filesFromFolder)
   const parsedFileDependencies = await Promise.all(filesFromFolder.map(getDependenciesFromFile));
 
   const replacements = await tsconfigReplacementPaths(tsconfig)
