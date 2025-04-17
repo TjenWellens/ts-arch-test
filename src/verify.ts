@@ -118,7 +118,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
 
       if (specifierRelativeFile.test(specifier)) {
         return [{
-          typeOnly: (!!importClause && !importClause.isTypeOnly),
+          typeOnly: (importClause?.isTypeOnly || false),
           relativePathReference: true,
           importedModule: specifier,
           originalImportedModule: specifier,
@@ -126,7 +126,7 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
-          typeOnly: (!!importClause && !importClause.isTypeOnly),
+          typeOnly: (importClause?.isTypeOnly || false),
           relativePathReference: false,
           importedModule: specifier,
           originalImportedModule: specifier,
