@@ -106,4 +106,11 @@ describe('type-only', function () {
 		const violations = await act(fromFolder);
 		assert.deepEqual(violations, expected(fromFolder, expectTypeOnly));
 	})
+
+	it('should type only when only imports type inside curly braces', async function () {
+		const fromFolder = folders['typeInside'];
+		const expectTypeOnly = true;
+		const violations = await act(fromFolder);
+		assert.deepEqual(violations, expected(fromFolder, expectTypeOnly));
+	})
 });

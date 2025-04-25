@@ -67,6 +67,37 @@ async function getDependenciesFromFile(file: FilePathInfo): Promise<FileDependen
 const specifierRelativeFile = /^\..*$/;
 const specifierNodeModule = /^[^.]/;
 
+function importDeclarationIsTypeOnly(importDeclaration: ts.ImportDeclaration) {
+	if(!importDeclaration.importClause) {
+		throw new Error('unhandled code path: importDeclaration.importClause is undefined')
+	}
+
+	if(importDeclaration.importClause.isTypeOnly) {
+		return true;
+	}
+
+	for (const child of importDeclaration.importClause.getChildren()) {
+		if(!importClauseChildIsTypeOnly(child)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function importClauseChildIsTypeOnly(child: ts.Node): boolean {
+	switch (child.kind) {
+		case ts.SyntaxKind.NamedImports:
+			const namedImport = child as ts.NamedImports
+			const elements = namedImport.elements
+			for (const element of elements) {
+				if(!element.isTypeOnly) return false
+			}
+			return true;
+		default:
+			throw new Error(`unhandled SyntaxKind for import-clause child: ${ts.SyntaxKind[child.kind]} (${child.kind})`);
+	}
+}
+
 /**
  * based on https://stackoverflow.com/a/69210603/820837
  */
@@ -118,7 +149,8 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
 
       if (specifierRelativeFile.test(specifier)) {
         return [{
-          typeOnly: (importClause?.isTypeOnly || false),
+          // typeOnly: (importClause?.isTypeOnly || false),
+          typeOnly: importDeclarationIsTypeOnly(importDeclaration),
           relativePathReference: true,
           importedModule: specifier,
           originalImportedModule: specifier,
@@ -126,7 +158,8 @@ function getDependenciesFromNode(path: FilePathInfo, node: ts.Node): Dependency[
         }];
       } else if (specifierNodeModule.test(specifier)) {
         return [{
-          typeOnly: (importClause?.isTypeOnly || false),
+		  // typeOnly: (importClause?.isTypeOnly || false),
+		  typeOnly: importDeclarationIsTypeOnly(importDeclaration),
           relativePathReference: false,
           importedModule: specifier,
           originalImportedModule: specifier,

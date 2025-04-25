@@ -1,6 +1,7 @@
-import type {Foo} from "../db/some-lib";
+import type {Foo, Bar} from "../db/some-lib";
 
-type FooWrapper = {
+type FooBarWrapper = {
 	id : string
 	foo: Foo;
+	bar: Bar;
 }
