@@ -68,6 +68,8 @@ describe('type-only', function () {
 		both: 'src/imports-both-types-and-code',
 		typeInside: 'src/only-imports-types-inside-curly-braces',
 		typeOutside: 'src/only-imports-types-outside-curly-braces',
+		namespaceType: 'src/namespace-import-type-only',
+		namespaceCode: 'src/namespace-import-code',
 	};
 
 	function expected(fromFolder: string, expectTypeOnly: boolean) {
@@ -112,5 +114,22 @@ describe('type-only', function () {
 		const expectTypeOnly = true;
 		const violations = await act(fromFolder);
 		assert.deepEqual(violations, expected(fromFolder, expectTypeOnly));
+	})
+
+	describe('namespace import', ()=>{
+
+		it('should not type only when imports code', async function () {
+			const fromFolder = folders['namespaceCode'];
+			const expectTypeOnly = false;
+			const violations = await act(fromFolder);
+			assert.deepEqual(violations, expected(fromFolder, expectTypeOnly));
+		})
+
+		it('should type only when only imports type', async function () {
+			const fromFolder = folders['namespaceType'];
+			const expectTypeOnly = true;
+			const violations = await act(fromFolder);
+			assert.deepEqual(violations, expected(fromFolder, expectTypeOnly));
+		})
 	})
 });

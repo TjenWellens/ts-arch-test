@@ -93,6 +93,9 @@ function importClauseChildIsTypeOnly(child: ts.Node): boolean {
 				if(!element.isTypeOnly) return false
 			}
 			return true;
+		case ts.SyntaxKind.NamespaceImport:
+			// I'm assuming NamespaceImport requires entire ImportClause to be type only
+			return false;
 		default:
 			throw new Error(`unhandled SyntaxKind for import-clause child: ${ts.SyntaxKind[child.kind]} (${child.kind})`);
 	}
